@@ -1,3 +1,4 @@
+import path from "path";
 import express from "express";
 import dotenv from "dotenv";
 dotenv.config();
@@ -18,7 +19,16 @@ app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
 
-app.get("/", (req, res) => res.send("server is ready"));
+if (process.env.NODE_ENV === "production") {
+  const _dirname = path.resolve();
+  app.use(express.static(path.join(_dirname, "frontend/dist")));
+
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(_dirname, "frontend", "dist", "index.html"))
+  );
+} else {
+  app.get("/", (req, res) => res.send("server is ready"));
+}
 
 app.use(notFound);
 app.use(errorHandler);
